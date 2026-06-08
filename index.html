@@ -24,16 +24,103 @@
       color: var(--text);
       font-family: 'Noto Sans TC', sans-serif;
       height: 100dvh;
-      display: flex;
       overflow: hidden;
     }
 
-    /* ── Canvas area ── */
+    /* ══════════════════════════════
+       DEVICE SELECT SCREEN
+    ══════════════════════════════ */
+    #deviceSelect {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      z-index: 100;
+      gap: 32px;
+    }
+    #deviceSelect .ds-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(22px, 5vw, 42px);
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: 4px;
+      text-shadow: 0 0 30px rgba(255,60,60,0.5);
+    }
+    #deviceSelect .ds-sub {
+      font-size: 14px;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+    .ds-cards {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 0 20px;
+    }
+    .ds-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      min-width: 160px;
+      user-select: none;
+    }
+    .ds-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(255,60,60,0.2);
+    }
+    .ds-card:active { transform: scale(0.97); }
+    .ds-icon {
+      font-size: 52px;
+      line-height: 1;
+    }
+    .ds-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 13px;
+      letter-spacing: 2px;
+      color: var(--text);
+    }
+    .ds-desc {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* ══════════════════════════════
+       GAME LAYOUT — DESKTOP (side panel)
+    ══════════════════════════════ */
+    #gameRoot {
+      display: none;
+      height: 100dvh;
+    }
+    #gameRoot.layout-desktop {
+      display: flex;
+      flex-direction: row;
+    }
+    #gameRoot.layout-mobile {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Canvas wrap */
     #canvasWrap {
-      flex: 1;
       position: relative;
       overflow: hidden;
     }
+    .layout-desktop #canvasWrap { flex: 1; }
+    .layout-mobile  #canvasWrap { flex: 1; }
 
     #gameCanvas {
       display: block;
@@ -43,16 +130,27 @@
       touch-action: none;
     }
 
-    /* ── Side panel ── */
+    /* ── Desktop side panel ── */
     #uiPanel {
-      width: 200px;
-      min-width: 160px;
       background: var(--panel);
-      border-left: 1px solid var(--border);
       display: flex;
       flex-direction: column;
+    }
+    .layout-desktop #uiPanel {
+      width: 200px;
+      min-width: 160px;
+      border-left: 1px solid var(--border);
       padding: 24px 16px 20px;
+    }
+    /* ── Mobile bottom panel ── */
+    .layout-mobile #uiPanel {
+      width: 100%;
+      border-top: 1px solid var(--border);
+      padding: 10px 16px 12px;
+      flex-direction: row;
+      align-items: center;
       gap: 0;
+      flex-wrap: wrap;
     }
 
     .panel-title {
@@ -61,12 +159,19 @@
       letter-spacing: 3px;
       color: var(--accent);
       text-transform: uppercase;
-      margin-bottom: 28px;
       text-align: center;
     }
+    .layout-desktop .panel-title { margin-bottom: 28px; }
+    .layout-mobile  .panel-title { display: none; }
 
-    .stat-block {
-      margin-bottom: 20px;
+    /* stat block */
+    .stat-block { }
+    .layout-desktop .stat-block { margin-bottom: 20px; }
+    .layout-mobile  .stat-block {
+      flex: 1;
+      min-width: 70px;
+      text-align: center;
+      padding: 0 4px;
     }
 
     .stat-label {
@@ -74,27 +179,26 @@
       letter-spacing: 2px;
       color: var(--muted);
       text-transform: uppercase;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .stat-value {
       font-family: 'Orbitron', monospace;
-      font-size: 26px;
       font-weight: 700;
       color: var(--text);
       line-height: 1;
     }
-
+    .layout-desktop .stat-value { font-size: 26px; }
+    .layout-mobile  .stat-value { font-size: 18px; }
     .stat-value.accent { color: var(--accent2); }
 
-    /* combo flash */
     @keyframes comboPop {
       0%   { transform: scale(1.4); color: #ff3c3c; }
       100% { transform: scale(1);   color: var(--text); }
     }
     .combo-pop { animation: comboPop 0.3s ease-out forwards; }
 
-    /* time bar */
+    /* time bar — desktop only */
     #timeBarWrap {
       height: 4px;
       background: var(--border);
@@ -108,8 +212,9 @@
       border-radius: 2px;
       transition: width 1s linear, background 0.5s;
     }
+    .layout-mobile #timeBarWrap { display: none; }
 
-    /* speed indicator */
+    /* speed pips — desktop only */
     #speedPips {
       display: flex;
       gap: 4px;
@@ -123,8 +228,10 @@
       transition: background 0.3s;
     }
     .pip.on { background: var(--accent2); }
+    .layout-mobile #speedPips { display: none; }
 
     .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+    .layout-mobile .divider { display: none; }
 
     /* pause btn */
     #pauseBtn {
@@ -132,14 +239,21 @@
       border: 1px solid var(--border);
       color: var(--muted);
       border-radius: 6px;
-      padding: 8px;
       font-family: 'Noto Sans TC', sans-serif;
-      font-size: 12px;
       cursor: pointer;
       transition: border-color 0.2s, color 0.2s;
+      display: none;
+    }
+    .layout-desktop #pauseBtn {
+      padding: 8px;
+      font-size: 12px;
       width: 100%;
       margin-bottom: 10px;
-      display: none;
+    }
+    .layout-mobile #pauseBtn {
+      padding: 8px 14px;
+      font-size: 13px;
+      margin-left: auto;
     }
     #pauseBtn:hover { border-color: var(--accent); color: var(--text); }
 
@@ -151,8 +265,9 @@
       border-top: 1px solid var(--border);
       padding-top: 12px;
     }
+    .layout-mobile .dev-info { display: none; }
 
-    /* ── Overlay screens ── */
+    /* ── Overlays ── */
     .overlay {
       position: absolute;
       inset: 0;
@@ -177,21 +292,18 @@
       text-shadow: 0 0 30px rgba(255,60,60,0.5);
       text-align: center;
     }
-
     .overlay-sub {
       font-size: 14px;
       color: var(--muted);
       text-align: center;
       line-height: 1.7;
     }
-
     .final-score {
       font-family: 'Orbitron', monospace;
       font-size: clamp(40px, 8vw, 72px);
       font-weight: 900;
       color: var(--accent2);
     }
-
     .btn {
       font-family: 'Orbitron', monospace;
       font-size: 13px;
@@ -208,10 +320,9 @@
     .btn:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(255,60,60,0.5); }
     .btn:active { transform: scale(0.97); }
 
-    /* ── Pause overlay ── */
     #pauseOverlay { background: rgba(10,10,15,0.75); backdrop-filter: blur(4px); }
 
-    /* ── Combo popup on canvas ── */
+    /* combo popup */
     #comboPopup {
       position: absolute;
       pointer-events: none;
@@ -221,7 +332,6 @@
       color: var(--accent2);
       text-shadow: 0 0 10px rgba(255,206,0,0.8);
       opacity: 0;
-      transition: opacity 0.15s;
       z-index: 5;
     }
     @keyframes popFloat {
@@ -234,64 +344,81 @@
 </head>
 <body>
 
-<div id="canvasWrap">
-  <canvas id="gameCanvas"></canvas>
-
-  <!-- Start overlay -->
-  <div class="overlay" id="startOverlay">
-    <div class="overlay-title">射擊挑戰</div>
-    <div class="overlay-sub">點擊敵人方塊消滅它們<br>連擊可獲得加倍分數</div>
-    <button class="btn" id="startBtn">開始遊戲</button>
+<!-- ── Device Select Screen ── -->
+<div id="deviceSelect">
+  <div class="ds-title">射擊挑戰</div>
+  <div class="ds-sub">選擇你的裝置</div>
+  <div class="ds-cards">
+    <div class="ds-card" id="pickDesktop">
+      <div class="ds-icon">🖥️</div>
+      <div class="ds-label">電腦</div>
+      <div class="ds-desc">側邊資訊面板<br>鍵盤快捷鍵支援</div>
+    </div>
+    <div class="ds-card" id="pickMobile">
+      <div class="ds-icon">📱</div>
+      <div class="ds-label">手機</div>
+      <div class="ds-desc">底部精簡面板<br>觸控優化介面</div>
+    </div>
   </div>
-
-  <!-- Pause overlay -->
-  <div class="overlay hidden" id="pauseOverlay">
-    <div class="overlay-title">暫停</div>
-    <button class="btn" id="resumeBtn">繼續</button>
-  </div>
-
-  <!-- End overlay -->
-  <div class="overlay hidden" id="endOverlay">
-    <div class="overlay-title">遊戲結束</div>
-    <div class="final-score" id="finalScore">0</div>
-    <div class="overlay-sub" id="endMsg"></div>
-    <button class="btn" id="restartBtn">再玩一次</button>
-  </div>
-
-  <!-- Floating combo text -->
-  <div id="comboPopup"></div>
 </div>
 
-<div id="uiPanel">
-  <div class="panel-title">射擊挑戰</div>
+<!-- ── Game Root ── -->
+<div id="gameRoot">
+  <div id="canvasWrap">
+    <canvas id="gameCanvas"></canvas>
 
-  <div class="stat-block">
-    <div class="stat-label">分數</div>
-    <div class="stat-value" id="sVal">0</div>
+    <div class="overlay" id="startOverlay">
+      <div class="overlay-title">射擊挑戰</div>
+      <div class="overlay-sub">點擊敵人方塊消滅它們<br>連擊可獲得加倍分數</div>
+      <button class="btn" id="startBtn">開始遊戲</button>
+    </div>
+
+    <div class="overlay hidden" id="pauseOverlay">
+      <div class="overlay-title">暫停</div>
+      <button class="btn" id="resumeBtn">繼續</button>
+    </div>
+
+    <div class="overlay hidden" id="endOverlay">
+      <div class="overlay-title">遊戲結束</div>
+      <div class="final-score" id="finalScore">0</div>
+      <div class="overlay-sub" id="endMsg"></div>
+      <button class="btn" id="restartBtn">再玩一次</button>
+    </div>
+
+    <div id="comboPopup"></div>
   </div>
 
-  <div class="stat-block">
-    <div class="stat-label">連擊</div>
-    <div class="stat-value accent" id="comboVal">×1</div>
-  </div>
+  <div id="uiPanel">
+    <div class="panel-title">射擊挑戰</div>
 
-  <div class="stat-block">
-    <div class="stat-label">剩餘時間</div>
-    <div class="stat-value" id="tVal">60</div>
-    <div id="timeBarWrap"><div id="timeBar" style="width:100%"></div></div>
-  </div>
+    <div class="stat-block">
+      <div class="stat-label">分數</div>
+      <div class="stat-value" id="sVal">0</div>
+    </div>
 
-  <div class="stat-block">
-    <div class="stat-label">速度等級</div>
-    <div class="stat-value" id="vVal">1</div>
-    <div id="speedPips"></div>
-  </div>
+    <div class="stat-block">
+      <div class="stat-label">連擊</div>
+      <div class="stat-value accent" id="comboVal">×1</div>
+    </div>
 
-  <hr class="divider">
-  <button id="pauseBtn">⏸ 暫停</button>
+    <div class="stat-block">
+      <div class="stat-label">時間</div>
+      <div class="stat-value" id="tVal">60</div>
+      <div id="timeBarWrap"><div id="timeBar" style="width:100%"></div></div>
+    </div>
 
-  <div class="dev-info">
-    開發者<br>沈葦柏 / 何品睿
+    <div class="stat-block">
+      <div class="stat-label">速度</div>
+      <div class="stat-value" id="vVal">1.2</div>
+      <div id="speedPips"></div>
+    </div>
+
+    <hr class="divider">
+    <button id="pauseBtn">⏸ 暫停</button>
+
+    <div class="dev-info">
+      開發者<br>沈葦柏 / 何品睿
+    </div>
   </div>
 </div>
 
@@ -299,11 +426,11 @@
 // ── Constants ──
 const TOTAL_TIME    = 60;
 const ENEMY_SIZE    = 50;
-const SPAWN_RATE    = 0.022;      // per-frame chance
+const SPAWN_RATE    = 0.022;
 const BASE_SPEED    = 1.2;
-const SPEED_INC     = 0.1;        // per second
+const SPEED_INC     = 0.1;
 const BULLET_FADE   = 0.12;
-const COMBO_TIMEOUT = 1800;       // ms to reset combo
+const COMBO_TIMEOUT = 1800;
 const MAX_SPEED_PIPS = 10;
 
 // ── State ──
@@ -313,26 +440,40 @@ let gameActive = false, paused = false;
 let combo = 1, comboTimer = null;
 let rafId = null, timerInterval = null;
 let missCount = 0;
+let isMobile = false;
 
 // ── DOM refs ──
-const canvas        = document.getElementById('gameCanvas');
-const ctx           = canvas.getContext('2d');
-const sVal          = document.getElementById('sVal');
-const tVal          = document.getElementById('tVal');
-const vVal          = document.getElementById('vVal');
-const comboVal      = document.getElementById('comboVal');
-const timeBar       = document.getElementById('timeBar');
-const speedPips     = document.getElementById('speedPips');
-const startOverlay  = document.getElementById('startOverlay');
-const pauseOverlay  = document.getElementById('pauseOverlay');
-const endOverlay    = document.getElementById('endOverlay');
-const finalScore    = document.getElementById('finalScore');
-const endMsg        = document.getElementById('endMsg');
-const pauseBtn      = document.getElementById('pauseBtn');
-const comboPopup    = document.getElementById('comboPopup');
+const canvas       = document.getElementById('gameCanvas');
+const ctx          = canvas.getContext('2d');
+const sVal         = document.getElementById('sVal');
+const tVal         = document.getElementById('tVal');
+const vVal         = document.getElementById('vVal');
+const comboVal     = document.getElementById('comboVal');
+const timeBar      = document.getElementById('timeBar');
+const speedPips    = document.getElementById('speedPips');
+const startOverlay = document.getElementById('startOverlay');
+const pauseOverlay = document.getElementById('pauseOverlay');
+const endOverlay   = document.getElementById('endOverlay');
+const finalScore   = document.getElementById('finalScore');
+const endMsg       = document.getElementById('endMsg');
+const pauseBtn     = document.getElementById('pauseBtn');
+const comboPopup   = document.getElementById('comboPopup');
+const gameRoot     = document.getElementById('gameRoot');
+const deviceSelect = document.getElementById('deviceSelect');
 
 const playerImg = new Image();
 playerImg.src = 'https://raw.githubusercontent.com/webo9804/point-to-anime/main/ET6yUFLXgAEsCwx-Photoroom.png';
+
+// ── Device select ──
+function applyLayout(mobile) {
+  isMobile = mobile;
+  deviceSelect.style.display = 'none';
+  gameRoot.className = mobile ? 'layout-mobile' : 'layout-desktop';
+  resizeCanvas();
+}
+
+document.getElementById('pickDesktop').addEventListener('click', () => applyLayout(false));
+document.getElementById('pickMobile').addEventListener('click',  () => applyLayout(true));
 
 // ── Canvas resize ──
 function resizeCanvas() {
@@ -340,7 +481,6 @@ function resizeCanvas() {
   canvas.width  = wrap.clientWidth;
   canvas.height = wrap.clientHeight;
 }
-resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
 // ── Speed pip UI ──
@@ -355,21 +495,18 @@ function buildPips() {
 buildPips();
 
 function updatePips(level) {
-  const pips = speedPips.querySelectorAll('.pip');
-  pips.forEach((p, i) => p.classList.toggle('on', i < level));
+  speedPips.querySelectorAll('.pip').forEach((p, i) => p.classList.toggle('on', i < level));
 }
 
 // ── Enemy factory ──
 function spawnEnemy() {
-  const size = ENEMY_SIZE * (0.8 + Math.random() * 0.6);
+  const size  = ENEMY_SIZE * (0.8 + Math.random() * 0.6);
   const speed = fallSpeed * (0.8 + Math.random() * 0.5);
-  const hue = Math.random() * 360;
+  const hue   = Math.random() * 360;
   return {
     x: Math.random() * (canvas.width - size),
     y: -size,
-    size,
-    speed,
-    hue,
+    size, speed, hue,
     alive: true,
     rotation: (Math.random() - 0.5) * 0.04,
     angle: 0,
@@ -380,27 +517,19 @@ function spawnEnemy() {
 // ── Particle burst ──
 function spawnParticles(x, y, hue) {
   for (let i = 0; i < 10; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = 1.5 + Math.random() * 3;
-    particles.push({
-      x, y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      alpha: 1,
-      hue,
-      size: 2 + Math.random() * 3,
-    });
+    const a = Math.random() * Math.PI * 2;
+    const s = 1.5 + Math.random() * 3;
+    particles.push({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s, alpha: 1, hue, size: 2 + Math.random()*3 });
   }
 }
 
 // ── Combo popup ──
 function showComboPopup(x, y, text) {
+  const wrapRect = document.getElementById('canvasWrap').getBoundingClientRect();
   const canvasRect = canvas.getBoundingClientRect();
-  const wrap = document.getElementById('canvasWrap');
-  const wrapRect = wrap.getBoundingClientRect();
   comboPopup.textContent = text;
-  comboPopup.style.left = (x - wrapRect.left + canvasRect.left - wrapRect.left) + 'px';
-  comboPopup.style.top  = (y - wrapRect.top  + canvasRect.top  - wrapRect.top - 20) + 'px';
+  comboPopup.style.left = (x + canvasRect.left - wrapRect.left) + 'px';
+  comboPopup.style.top  = (y + canvasRect.top  - wrapRect.top - 20) + 'px';
   comboPopup.classList.remove('show');
   void comboPopup.offsetWidth;
   comboPopup.classList.add('show');
@@ -410,47 +539,35 @@ function showComboPopup(x, y, text) {
 canvas.addEventListener('pointerdown', e => {
   if (!gameActive || paused) return;
   e.preventDefault();
-
   const rect = canvas.getBoundingClientRect();
-  const cx   = e.clientX - rect.left;
-  const cy   = e.clientY - rect.top;
+  const cx = e.clientX - rect.left;
+  const cy = e.clientY - rect.top;
 
-  // Draw bullet
   const ox = canvas.width / 2;
-  const oy = canvas.height - 130;
+  const oy = canvas.height - (isMobile ? 80 : 130);
   bullets.push({ x1: ox, y1: oy, x2: cx, y2: cy, alpha: 1 });
 
-  // Hit detection
-  let hit = false;
   enemies.forEach(en => {
     if (!en.alive) return;
     if (cx > en.x && cx < en.x + en.size && cy > en.y && cy < en.y + en.size) {
       en.hp--;
       if (en.hp <= 0) {
         en.alive = false;
-        spawnParticles(en.x + en.size / 2, en.y + en.size / 2, en.hue);
+        spawnParticles(en.x + en.size/2, en.y + en.size/2, en.hue);
 
-        // Combo
         clearTimeout(comboTimer);
         const pts = 10 * combo * Math.round(en.size / ENEMY_SIZE);
         score += pts;
         sVal.textContent = score;
 
-        if (combo > 1) {
-          showComboPopup(cx, cy, `×${combo} +${pts}`);
-        }
+        if (combo > 1) showComboPopup(cx, cy, `×${combo} +${pts}`);
         combo = Math.min(combo + 1, 8);
         comboVal.textContent = `×${combo}`;
         comboVal.classList.remove('combo-pop');
         void comboVal.offsetWidth;
         comboVal.classList.add('combo-pop');
 
-        comboTimer = setTimeout(() => {
-          combo = 1;
-          comboVal.textContent = '×1';
-        }, COMBO_TIMEOUT);
-
-        hit = true;
+        comboTimer = setTimeout(() => { combo = 1; comboVal.textContent = '×1'; }, COMBO_TIMEOUT);
       }
     }
   });
@@ -459,85 +576,61 @@ canvas.addEventListener('pointerdown', e => {
 // ── Main loop ──
 function update() {
   if (!gameActive || paused) return;
-
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Draw player
+  // Player
   if (playerImg.complete && playerImg.naturalWidth > 0) {
     const ratio = playerImg.naturalWidth / playerImg.naturalHeight;
-    const h = 220, w = h * ratio;
-    ctx.drawImage(playerImg, canvas.width / 2 - w / 2, canvas.height - h + 20, w, h);
+    const h = isMobile ? 140 : 220;
+    const w = h * ratio;
+    ctx.drawImage(playerImg, canvas.width/2 - w/2, canvas.height - h + 10, w, h);
   }
 
   // Bullets
   bullets = bullets.filter(b => {
     ctx.save();
-    ctx.strokeStyle = `rgba(255, 230, 0, ${b.alpha})`;
+    ctx.strokeStyle = `rgba(255,230,0,${b.alpha})`;
     ctx.lineWidth = 2;
     ctx.shadowBlur = 8;
     ctx.shadowColor = 'rgba(255,230,0,0.6)';
-    ctx.beginPath();
-    ctx.moveTo(b.x1, b.y1);
-    ctx.lineTo(b.x2, b.y2);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(b.x1, b.y1); ctx.lineTo(b.x2, b.y2); ctx.stroke();
     ctx.restore();
     b.alpha -= BULLET_FADE;
     return b.alpha > 0;
   });
 
-  // Spawn
-  if (Math.random() < SPAWN_RATE + (fallSpeed - BASE_SPEED) * 0.005) {
-    enemies.push(spawnEnemy());
-  }
+  if (Math.random() < SPAWN_RATE + (fallSpeed - BASE_SPEED) * 0.005) enemies.push(spawnEnemy());
 
-  // Enemies
   enemies.forEach(en => {
     if (!en.alive) return;
     en.y += en.speed;
     en.angle += en.rotation;
     if (en.y > canvas.height) { en.alive = false; missCount++; }
-
     ctx.save();
-    ctx.translate(en.x + en.size / 2, en.y + en.size / 2);
+    ctx.translate(en.x + en.size/2, en.y + en.size/2);
     ctx.rotate(en.angle);
-
-    // Pulsing glow for high-hp
-    const glow = en.hp > 1 ? 16 : 8;
-    ctx.shadowBlur = glow;
-    ctx.shadowColor = `hsl(${en.hue}, 80%, 60%)`;
-    ctx.fillStyle = `hsl(${en.hue}, 70%, ${en.hp > 1 ? 55 : 50}%)`;
-
-    // Shape variety
+    ctx.shadowBlur = en.hp > 1 ? 16 : 8;
+    ctx.shadowColor = `hsl(${en.hue},80%,60%)`;
+    ctx.fillStyle = `hsl(${en.hue},70%,${en.hp > 1 ? 55 : 50}%)`;
     if (en.hp > 1) {
-      // Diamond shape for tougher enemies
       ctx.beginPath();
-      ctx.moveTo(0, -en.size / 2);
-      ctx.lineTo(en.size / 2, 0);
-      ctx.lineTo(0, en.size / 2);
-      ctx.lineTo(-en.size / 2, 0);
-      ctx.closePath();
-      ctx.fill();
+      ctx.moveTo(0, -en.size/2); ctx.lineTo(en.size/2, 0);
+      ctx.lineTo(0, en.size/2); ctx.lineTo(-en.size/2, 0);
+      ctx.closePath(); ctx.fill();
     } else {
-      ctx.fillRect(-en.size / 2, -en.size / 2, en.size, en.size);
+      ctx.fillRect(-en.size/2, -en.size/2, en.size, en.size);
     }
-
     ctx.restore();
   });
   enemies = enemies.filter(en => en.alive);
 
-  // Particles
   particles = particles.filter(p => {
-    p.x += p.vx;
-    p.y += p.vy;
-    p.vy += 0.12;
-    p.alpha -= 0.035;
+    p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.alpha -= 0.035;
     if (p.alpha <= 0) return false;
     ctx.save();
     ctx.globalAlpha = p.alpha;
-    ctx.fillStyle = `hsl(${p.hue}, 80%, 65%)`;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillStyle = `hsl(${p.hue},80%,65%)`;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
     ctx.restore();
     return true;
   });
@@ -551,20 +644,12 @@ function startTimer() {
     if (!gameActive || paused) return;
     timeLeft--;
     tVal.textContent = timeLeft;
-
-    // Time bar
     const pct = (timeLeft / TOTAL_TIME) * 100;
     timeBar.style.width = pct + '%';
-    if (pct < 30) timeBar.style.background = '#ff3c3c';
-    else if (pct < 60) timeBar.style.background = '#ffce00';
-    else timeBar.style.background = 'var(--accent)';
-
-    // Speed
+    timeBar.style.background = pct < 30 ? '#ff3c3c' : pct < 60 ? '#ffce00' : 'var(--accent)';
     fallSpeed = BASE_SPEED + (TOTAL_TIME - timeLeft) * SPEED_INC;
-    const level = Math.min(Math.floor(TOTAL_TIME - timeLeft) + 1, MAX_SPEED_PIPS);
     vVal.textContent = fallSpeed.toFixed(1);
-    updatePips(level);
-
+    updatePips(Math.min(Math.floor(TOTAL_TIME - timeLeft) + 1, MAX_SPEED_PIPS));
     if (timeLeft <= 0) endGame();
   }, 1000);
 }
@@ -581,11 +666,9 @@ function startGame() {
   timeBar.style.width = '100%';
   timeBar.style.background = 'var(--accent)';
   updatePips(1);
-
   startOverlay.classList.add('hidden');
   endOverlay.classList.add('hidden');
-  pauseBtn.style.display = 'block';
-
+  pauseBtn.style.display = isMobile ? 'block' : 'block';
   gameActive = true;
   paused = false;
   startTimer();
@@ -597,10 +680,9 @@ function endGame() {
   clearInterval(timerInterval);
   cancelAnimationFrame(rafId);
   pauseBtn.style.display = 'none';
-
   finalScore.textContent = score;
   const grade = score >= 500 ? '🏆 神射手！' : score >= 300 ? '🎯 優秀！' : score >= 150 ? '👍 不錯！' : '繼續加油！';
-  endMsg.textContent = grade + `  連擊最高 ×${combo}  漏掉 ${missCount} 個`;
+  endMsg.textContent = `${grade}  連擊最高 ×${combo}  漏掉 ${missCount} 個`;
   endOverlay.classList.remove('hidden');
 }
 
@@ -612,16 +694,11 @@ function togglePause() {
   if (!paused) rafId = requestAnimationFrame(update);
 }
 
-// ── Button events ──
 document.getElementById('startBtn').addEventListener('click', startGame);
 document.getElementById('restartBtn').addEventListener('click', startGame);
 pauseBtn.addEventListener('click', togglePause);
 document.getElementById('resumeBtn').addEventListener('click', togglePause);
-
-// Keyboard shortcut
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' || e.key === 'p') togglePause();
-});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' || e.key === 'p') togglePause(); });
 </script>
 </body>
 </html>
