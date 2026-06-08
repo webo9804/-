@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>射擊挑戰</title>
     <style>
-        body { margin: 0; background: #000; color: white; height: 100vh; overflow: hidden; font-family: sans-serif; }
-        #gameCanvas { display: block; touch-action: none; width: 100vw; height: 100vh; }
-        #uiPanel { position: absolute; top: 10px; left: 10px; pointer-events: none; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; }
+        body { margin: 0; background: #000; color: white; display: flex; height: 100vh; overflow: hidden; font-family: sans-serif; }
+        #gameCanvas { flex: 3; touch-action: none; background: #111; cursor: crosshair; }
+        #uiPanel { flex: 1; min-width: 200px; padding: 20px; background: #222; border-left: 2px solid #444; display: flex; flex-direction: column; }
+        .stat { margin-bottom: 10px; font-size: 18px; color: #fff; }
+        .dev-info { margin-top: auto; font-size: 14px; color: #888; border-top: 1px solid #444; padding-top: 10px; }
         #startBtn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px 40px; font-size: 24px; background: #ff3333; color: white; border: none; border-radius: 10px; cursor: pointer; }
     </style>
 </head>
@@ -15,82 +17,80 @@
 
 <canvas id="gameCanvas"></canvas>
 <div id="uiPanel">
-    <div>分數: <span id="sVal">0</span> | 時間: <span id="tVal">60</span>s</div>
-    <div style="font-size: 12px; color: #aaa;">開發者：沈葦柏 / 何品睿</div>
+    <h1>射擊挑戰</h1>
+    <div class="stat">分數: <span id="sVal">0</span></div>
+    <div class="stat">時間: <span id="tVal">60</span>s</div>
+    <div class="stat">下落速度: <span id="vVal">1.0</span></div>
+    <div class="dev-info">開發者：沈葦柏 / 何品睿</div>
 </div>
 <button id="startBtn">開始遊戲</button>
 
 <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
-    const startBtn = document.getElementById("startBtn");
-    const sVal = document.getElementById("sVal");
-    const tVal = document.getElementById("tVal");
+    const sVal = document.getElementById("sVal"), tVal = document.getElementById("tVal"), vVal = document.getElementById("vVal");
     
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
 
-    // 載入角色圖片
     const playerImg = new Image();
     playerImg.src = 'https://raw.githubusercontent.com/webo9804/point-to-anime/main/ET6yUFLXgAEsCwx-Photoroom.png';
 
-    let enemies = [], score = 0, timeLeft = 60, gameActive = false;
-
-    startBtn.addEventListener("click", () => {
-        gameActive = true;
-        startBtn.style.display = "none";
-        const timer = setInterval(() => {
-            if(timeLeft > 0) { timeLeft--; tVal.innerText = timeLeft; }
-            else { clearInterval(timer); gameActive = false; }
-        }, 1000);
-        requestAnimationFrame(update);
-    });
+    let enemies = [], bullets = [], score = 0, timeLeft = 60, gameActive = false, fallSpeed = 1;
 
     window.addEventListener("pointerdown", (e) => {
-        if(!gameActive) return;
+        if(!gameActive || e.target !== canvas) return;
+        const originX = canvas.width / 2;
+        const originY = canvas.height - 150;
+        bullets.push({ x1: originX, y1: originY, x2: e.clientX, y2: e.clientY, alpha: 1 });
+        
         enemies.forEach(en => {
             if(e.clientX > en.x && e.clientX < en.x+50 && e.clientY > en.y && e.clientY < en.y+50) {
-                en.alive = false; 
-                score += 10; 
-                sVal.innerText = score;
+                en.alive = false; score += 10; sVal.innerText = score;
             }
         });
     });
 
     function update() {
+        if(!gameActive) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // 繪製角色 (依比例計算大小，避免變形)
-        if (playerImg.complete) {
-            const aspectRatio = playerImg.naturalWidth / playerImg.naturalHeight;
-            const pHeight = 300; 
-            const pWidth = pHeight * aspectRatio;
-            ctx.drawImage(playerImg, canvas.width/2 - pWidth/2, canvas.height - pHeight + 30, pWidth, pHeight);
+        const ratio = playerImg.naturalWidth / playerImg.naturalHeight || 1;
+        const h = 300, w = h * ratio;
+        ctx.drawImage(playerImg, canvas.width/2 - w/2, canvas.height - h + 30, w, h);
+
+        bullets.forEach((b, i) => {
+            ctx.strokeStyle = `rgba(255, 255, 0, ${b.alpha})`;
+            ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(b.x1, b.y1); ctx.lineTo(b.x2, b.y2); ctx.stroke();
+            b.alpha -= 0.1;
+            if(b.alpha <= 0) bullets.splice(i, 1);
+        });
+
+        if (Math.random() < 0.02) {
+            enemies.push({ x: Math.random() * (canvas.width - 50), y: -50, color: `hsl(${Math.random()*360}, 70%, 60%)`, alive: true });
         }
 
-        if(gameActive) {
-            // 生成敵人
-            if (Math.random() < 0.03) {
-                enemies.push({ x: Math.random() * (canvas.width - 50), y: -50, vy: 2 + (score/100), alive: true });
-            }
-
-            // 更新敵人
-            enemies.forEach((e) => {
-                e.y += e.vy;
-                ctx.fillStyle = "#FF5733";
-                ctx.fillRect(e.x, e.y, 50, 50);
-                if(e.y > canvas.height) e.alive = false;
-            });
-            enemies = enemies.filter(e => e.alive);
-            requestAnimationFrame(update);
-        } else if (score > 0 || timeLeft === 0) {
-            // 遊戲結束結算畫面
-            ctx.fillStyle = "white";
-            ctx.font = "30px Arial";
-            ctx.textAlign = "center";
-            ctx.fillText("遊戲結束! 最終分數: " + score, canvas.width/2, canvas.height/2);
-        }
+        enemies.forEach(e => {
+            e.y += fallSpeed;
+            ctx.fillStyle = e.color;
+            ctx.fillRect(e.x, e.y, 50, 50);
+            if(e.y > canvas.height) e.alive = false;
+        });
+        enemies = enemies.filter(e => e.alive);
+        
+        requestAnimationFrame(update);
     }
+
+    document.getElementById("startBtn").addEventListener("click", (e) => {
+        e.target.style.display = "none";
+        gameActive = true;
+        const timer = setInterval(() => {
+            if(timeLeft > 0) { timeLeft--; tVal.innerText = timeLeft; fallSpeed += 0.1; vVal.innerText = fallSpeed.toFixed(1); }
+            else { clearInterval(timer); gameActive = false; alert("遊戲結束，得分: " + score); location.reload(); }
+        }, 1000);
+        update();
+    });
 </script>
 </body>
 </html>
