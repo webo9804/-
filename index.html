@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>射擊挑戰</title>
     <style>
-        body { margin: 0; background: #1a1a1a; color: white; height: 100vh; overflow: hidden; font-family: sans-serif; }
-        #gameCanvas { display: block; touch-action: none; background: #000; width: 100vw; height: 100vh; }
-        #uiPanel { position: absolute; top: 10px; left: 10px; pointer-events: none; }
+        body { margin: 0; background: #000; color: white; height: 100vh; overflow: hidden; font-family: sans-serif; }
+        #gameCanvas { display: block; touch-action: none; width: 100vw; height: 100vh; }
+        #uiPanel { position: absolute; top: 10px; left: 10px; pointer-events: none; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; }
         #startBtn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px 40px; font-size: 24px; background: #ff3333; color: white; border: none; border-radius: 10px; cursor: pointer; }
     </style>
 </head>
@@ -15,7 +16,7 @@
 <canvas id="gameCanvas"></canvas>
 <div id="uiPanel">
     <div>分數: <span id="sVal">0</span> | 時間: <span id="tVal">60</span>s</div>
-    <div style="font-size: 12px; color: #666;">開發者：沈葦柏 / 何品睿</div>
+    <div style="font-size: 12px; color: #aaa;">開發者：沈葦柏 / 何品睿</div>
 </div>
 <button id="startBtn">開始遊戲</button>
 
@@ -38,7 +39,6 @@
     startBtn.addEventListener("click", () => {
         gameActive = true;
         startBtn.style.display = "none";
-        // 啟動倒數計時
         const timer = setInterval(() => {
             if(timeLeft > 0) { timeLeft--; tVal.innerText = timeLeft; }
             else { clearInterval(timer); gameActive = false; }
@@ -46,7 +46,6 @@
         requestAnimationFrame(update);
     });
 
-    // 觸控/點擊判定
     window.addEventListener("pointerdown", (e) => {
         if(!gameActive) return;
         enemies.forEach(en => {
@@ -59,29 +58,33 @@
     });
 
     function update() {
-        if(!gameActive) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // 1. 繪製角色 (置於底部中央)
-        const pWidth = 200, pHeight = 250;
-        ctx.drawImage(playerImg, canvas.width/2 - pWidth/2, canvas.height - pHeight, pWidth, pHeight);
-
-        // 2. 生成敵人
-        if (Math.random() < 0.03) {
-            enemies.push({ x: Math.random() * (canvas.width - 50), y: -50, vy: 2 + (score/100), alive: true });
+        // 繪製角色 (依比例計算大小，避免變形)
+        if (playerImg.complete) {
+            const aspectRatio = playerImg.naturalWidth / playerImg.naturalHeight;
+            const pHeight = 300; 
+            const pWidth = pHeight * aspectRatio;
+            ctx.drawImage(playerImg, canvas.width/2 - pWidth/2, canvas.height - pHeight + 30, pWidth, pHeight);
         }
 
-        // 3. 更新與繪製敵人
-        enemies.forEach((e) => {
-            e.y += e.vy;
-            ctx.fillStyle = "#FF5733";
-            ctx.fillRect(e.x, e.y, 50, 50);
-            if(e.y > canvas.height) e.alive = false;
-        });
-        enemies = enemies.filter(e => e.alive);
-        
-        if(gameActive) requestAnimationFrame(update);
-        else {
+        if(gameActive) {
+            // 生成敵人
+            if (Math.random() < 0.03) {
+                enemies.push({ x: Math.random() * (canvas.width - 50), y: -50, vy: 2 + (score/100), alive: true });
+            }
+
+            // 更新敵人
+            enemies.forEach((e) => {
+                e.y += e.vy;
+                ctx.fillStyle = "#FF5733";
+                ctx.fillRect(e.x, e.y, 50, 50);
+                if(e.y > canvas.height) e.alive = false;
+            });
+            enemies = enemies.filter(e => e.alive);
+            requestAnimationFrame(update);
+        } else if (score > 0 || timeLeft === 0) {
+            // 遊戲結束結算畫面
             ctx.fillStyle = "white";
             ctx.font = "30px Arial";
             ctx.textAlign = "center";
