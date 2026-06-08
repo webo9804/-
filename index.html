@@ -12,15 +12,19 @@
     let bullets = [];
     let enemies = [];
     let score = 0;
+    
+    // 設定變數：敵人寬度與子彈速度
+    const ENEMY_SIZE = 60; 
+    const BULLET_SPEED = 15;
 
-    // 1. 自動生成敵人的邏輯
+    // 自動生成敵人的邏輯
     function spawnEnemy() {
         if (enemies.length < 5) {
             enemies.push({ 
-                x: Math.random() * (canvas.width - 40), 
+                x: Math.random() * (canvas.width - ENEMY_SIZE), 
                 y: -50, 
                 vx: Math.random() * 4 - 2, 
-                vy: 2 + (score / 10), // 越玩越快
+                vy: 2 + (score / 5), // 難度爬升係數
                 alive: true 
             });
         }
@@ -31,7 +35,7 @@
         let dx = e.clientX - player.x;
         let dy = e.clientY - player.y;
         let mag = Math.sqrt(dx*dx + dy*dy);
-        bullets.push({ x: player.x, y: player.y, vx: (dx/mag)*8, vy: (dy/mag)*8 });
+        bullets.push({ x: player.x, y: player.y, vx: (dx/mag)*BULLET_SPEED, vy: (dy/mag)*BULLET_SPEED });
     });
 
     function update() {
@@ -45,15 +49,17 @@
                 return;
             }
             e.x += e.vx; e.y += e.vy;
-            if(e.x < 0 || e.x > canvas.width - 40) e.vx *= -1;
+            
+            // 邊緣反彈
+            if(e.x < 0 || e.x > canvas.width - ENEMY_SIZE) e.vx *= -1;
             
             ctx.fillStyle = "red";
-            ctx.fillRect(e.x, e.y, 40, 40);
+            ctx.fillRect(e.x, e.y, ENEMY_SIZE, ENEMY_SIZE);
             
-            // 敵人超出螢幕重置
+            // 超出螢幕重置
             if(e.y > canvas.height) {
                 e.y = -50;
-                e.x = Math.random() * (canvas.width - 40);
+                e.x = Math.random() * (canvas.width - ENEMY_SIZE);
             }
         });
 
@@ -64,7 +70,8 @@
             ctx.fillRect(b.x, b.y, 8, 8);
             
             enemies.forEach(e => {
-                if(e.alive && b.x > e.x && b.x < e.x+40 && b.y > e.y && b.y < e.y+40) {
+                // AABB 碰撞檢測 (使用 ENEMY_SIZE)
+                if (e.alive && b.x > e.x && b.x < e.x + ENEMY_SIZE && b.y > e.y && b.y < e.y + ENEMY_SIZE) {
                     e.alive = false;
                     score += 10;
                     bullets.splice(bi, 1);
