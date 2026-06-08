@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<body style="margin:0; overflow:hidden; background:black;">
+<canvas id="gameCanvas"></canvas>
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let enemies = [{ x: 100, y: 50, vx: 2, vy: 1, alive: true }];
+    let bullets = [];
+    
+    window.addEventListener("mousedown", (e) => {
+        let dx = e.clientX - 100;
+        let dy = e.clientY - 100;
+        let mag = Math.sqrt(dx*dx + dy*dy);
+        bullets.push({ x: 100, y: 100, vx: (dx/mag)*8, vy: (dy/mag)*8 });
+    });
+
+    function update() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        enemies.forEach(e => {
+            if(!e.alive) return;
+            e.x += e.vx; e.y += e.vy;
+            if(e.x < 0 || e.x > canvas.width) e.vx *= -1;
+            ctx.fillStyle = "red";
+            ctx.fillRect(e.x, e.y, 40, 40);
+        });
+        bullets.forEach((b, bi) => {
+            b.x += b.vx; b.y += b.vy;
+            ctx.fillStyle = "yellow";
+            ctx.fillRect(b.x, b.y, 8, 8);
+            enemies.forEach(e => {
+                if(e.alive && b.x > e.x && b.x < e.x+40 && b.y > e.y && b.y < e.y+40) {
+                    e.alive = false;
+                }
+            });
+        });
+        requestAnimationFrame(update);
+    }
+    update();
+</script>
+</body>
+</html>
