@@ -12,26 +12,32 @@
     let bullets = [];
     let enemies = [];
     let score = 0;
-    
-    // 設定變數：敵人寬度與子彈速度
+    let timeLeft = 60; // 設定 60 秒
+    let gameActive = true;
+
+    // 每秒倒數計時
+    setInterval(() => {
+        if(gameActive && timeLeft > 0) timeLeft--;
+        else if(timeLeft <= 0) gameActive = false;
+    }, 1000);
+
     const ENEMY_SIZE = 60; 
     const BULLET_SPEED = 15;
 
-    // 自動生成敵人的邏輯
     function spawnEnemy() {
-        if (enemies.length < 5) {
+        if (gameActive && enemies.length < 5) {
             enemies.push({ 
                 x: Math.random() * (canvas.width - ENEMY_SIZE), 
                 y: -50, 
                 vx: Math.random() * 4 - 2, 
-                vy: 2 + (score / 5), // 難度爬升係數
+                vy: 2 + (score / 5), 
                 alive: true 
             });
         }
     }
 
-    // 射擊邏輯
     window.addEventListener("mousedown", (e) => {
+        if(!gameActive) return;
         let dx = e.clientX - player.x;
         let dy = e.clientY - player.y;
         let mag = Math.sqrt(dx*dx + dy*dy);
@@ -41,48 +47,40 @@
     function update() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // 敵人更新與自動生成
-        spawnEnemy();
-        enemies.forEach((e, ei) => {
-            if(!e.alive) {
-                enemies.splice(ei, 1);
-                return;
-            }
-            e.x += e.vx; e.y += e.vy;
-            
-            // 邊緣反彈
-            if(e.x < 0 || e.x > canvas.width - ENEMY_SIZE) e.vx *= -1;
-            
-            ctx.fillStyle = "red";
-            ctx.fillRect(e.x, e.y, ENEMY_SIZE, ENEMY_SIZE);
-            
-            // 超出螢幕重置
-            if(e.y > canvas.height) {
-                e.y = -50;
-                e.x = Math.random() * (canvas.width - ENEMY_SIZE);
-            }
-        });
-
-        // 子彈與碰撞
-        bullets.forEach((b, bi) => {
-            b.x += b.vx; b.y += b.vy;
-            ctx.fillStyle = "yellow";
-            ctx.fillRect(b.x, b.y, 8, 8);
-            
-            enemies.forEach(e => {
-                // AABB 碰撞檢測 (使用 ENEMY_SIZE)
-                if (e.alive && b.x > e.x && b.x < e.x + ENEMY_SIZE && b.y > e.y && b.y < e.y + ENEMY_SIZE) {
-                    e.alive = false;
-                    score += 10;
-                    bullets.splice(bi, 1);
-                }
+        if (gameActive) {
+            spawnEnemy();
+            enemies.forEach((e, ei) => {
+                if(!e.alive) { enemies.splice(ei, 1); return; }
+                e.x += e.vx; e.y += e.vy;
+                if(e.x < 0 || e.x > canvas.width - ENEMY_SIZE) e.vx *= -1;
+                ctx.fillStyle = "red";
+                ctx.fillRect(e.x, e.y, ENEMY_SIZE, ENEMY_SIZE);
+                if(e.y > canvas.height) { e.y = -50; e.x = Math.random() * (canvas.width - ENEMY_SIZE); }
             });
-        });
 
-        // 繪製分數
+            bullets.forEach((b, bi) => {
+                b.x += b.vx; b.y += b.vy;
+                ctx.fillStyle = "yellow";
+                ctx.fillRect(b.x, b.y, 8, 8);
+                enemies.forEach(e => {
+                    if (e.alive && b.x > e.x && b.x < e.x + ENEMY_SIZE && b.y > e.y && b.y < e.y + ENEMY_SIZE) {
+                        e.alive = false; score += 10; bullets.splice(bi, 1);
+                    }
+                });
+            });
+        } else {
+            // 遊戲結束顯示
+            ctx.fillStyle = "white";
+            ctx.font = "48px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("Time's Up! Final Score: " + score, canvas.width/2, canvas.height/2);
+        }
+
+        // 顯示倒數與分數
         ctx.fillStyle = "white";
         ctx.font = "24px Arial";
-        ctx.fillText("Score: " + score, 20, 40);
+        ctx.textAlign = "left";
+        ctx.fillText("Score: " + score + " | Time: " + timeLeft, 20, 40);
         
         requestAnimationFrame(update);
     }
